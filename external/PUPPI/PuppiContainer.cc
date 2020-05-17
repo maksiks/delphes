@@ -183,14 +183,19 @@ const std::vector<double> PuppiContainer::puppiWeights() {
     if(pWeight*fPFParticles[i0].pt()   < fPuppiAlgo[pPupId].neutralPt(fNPV) && fRecoParticles[i0].id == 0 ) pWeight = 0;  //threshold cut on the neutral Pt
     
 
-    pWeight = 1.;
+    //pWeight = 1.;
 
 
     fWeights .push_back(pWeight);
     //Now get rid of the thrown out weights for the particle collection
-    if(pWeight == 0) continue;
-      //Produce
-    fastjet::PseudoJet curjet( pWeight*fPFParticles[i0].px(), pWeight*fPFParticles[i0].py(), pWeight*fPFParticles[i0].pz(), pWeight*fPFParticles[i0].e());
+
+    //if(pWeight == 0) continue;
+
+    //Produce
+
+    //fastjet::PseudoJet curjet( pWeight*fPFParticles[i0].px(), pWeight*fPFParticles[i0].py(), pWeight*fPFParticles[i0].pz(), pWeight*fPFParticles[i0].e());
+    fastjet::PseudoJet curjet( fPFParticles[i0].px(), fPFParticles[i0].py(), fPFParticles[i0].pz(), fPFParticles[i0].e());
+
     curjet.set_user_index(i0);//fRecoParticles[i0].id);
     fPupParticles.push_back(curjet);
   }

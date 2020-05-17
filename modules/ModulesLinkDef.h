@@ -52,6 +52,7 @@
 #include "modules/TrackCountingTauTagging.h"
 #include "modules/TreeWriter.h"
 #include "modules/Merger.h"
+#include "modules/PuppiMerger.h"
 #include "modules/LeptonDressing.h"
 #include "modules/PileUpMerger.h"
 #include "modules/JetPileUpSubtractor.h"
@@ -109,6 +110,7 @@
 #pragma link C++ class TrackCountingTauTagging+;
 #pragma link C++ class TreeWriter+;
 #pragma link C++ class Merger+;
+#pragma link C++ class PuppiMerger+;
 #pragma link C++ class LeptonDressing+;
 #pragma link C++ class PileUpMerger+;
 #pragma link C++ class JetPileUpSubtractor+;

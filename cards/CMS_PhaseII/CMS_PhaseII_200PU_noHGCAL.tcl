@@ -100,7 +100,7 @@ module PileUpMerger PileUpMerger {
   set PileUpFile /local/bmaier/papu/data/PileUp.data
 
   # average expected pile up
-  set MeanPileUp 100
+  set MeanPileUp 140
 
   # maximum spread in the beam direction in m
   set ZVertexSpread 0.25
@@ -610,7 +610,7 @@ module Merger MissingET {
   set MomentumOutputArray momentum
 }
 
-module Merger PuppiMissingET {
+module PuppiMerger PuppiMissingET {
   #add InputArray InputArray
   add InputArray RunPUPPI/PuppiParticles
   #add InputArray EFlowMerger/eflow
@@ -1033,30 +1033,33 @@ module StatusPidFilter GenParticleFilter {
 ##################
 
 module TreeWriter TreeWriter {
-# add Branch InputArray BranchName BranchClass
-  #add Branch GenParticleFilter/filteredParticles Particle GenParticle
-  add Branch PileUpMerger/stableParticles PileUpMix GenParticle
-  add Branch PileUpMerger/vertices Vertex Vertex
+## add Branch InputArray BranchName BranchClass
+## add Branch GenParticleFilter/filteredParticles Particle GenParticle
 
-  add Branch GenJetFinder/jets GenJet Jet
+  add Branch PileUpMerger/stableParticles PileUpMix GenParticle
+  #add Branch PileUpMerger/vertices Vertex Vertex
+
+  #add Branch GenJetFinder/jets GenJet Jet
   add Branch GenMissingET/momentum GenMissingET MissingET
 
-#  add Branch HCal/eflowTracks EFlowTrack Track
-#  add Branch ECal/eflowPhotons EFlowPhoton Tower
-#  add Branch HCal/eflowNeutralHadrons EFlowNeutralHadron Tower
+##  add Branch HCal/eflowTracks EFlowTrack Track
+##  add Branch ECal/eflowPhotons EFlowPhoton Tower
+##  add Branch HCal/eflowNeutralHadrons EFlowNeutralHadron Tower
 
-  add Branch PhotonEfficiency/photons Photon Photon
-  add Branch ElectronEfficiency/electrons Electron Electron
-  add Branch MuonLooseIdEfficiency/muons MuonLoose Muon
-  add Branch MuonTightIdEfficiency/muons MuonTight Muon
+  #add Branch PhotonEfficiency/photons Photon Photon
+  #add Branch ElectronEfficiency/electrons Electron Electron
+  #add Branch MuonLooseIdEfficiency/muons MuonLoose Muon
+  #add Branch MuonTightIdEfficiency/muons MuonTight Muon
 
-  add Branch JetEnergyScale/jets Jet Jet
-  add Branch FatJetFinder/jets FatJet Jet
+  #add Branch JetEnergyScale/jets Jet Jet
+  #add Branch FatJetFinder/jets FatJet Jet
 
   add Branch MissingET/momentum MissingET MissingET
   add Branch PuppiMissingET/momentum PuppiMissingET MissingET
-  add Branch GenPileUpMissingET/momentum GenPileUpMissingET MissingET
+  #add Branch GenPileUpMissingET/momentum GenPileUpMissingET MissingET
   add Branch RunPUPPI/PuppiParticles ParticleFlowCandidate ParticleFlowCandidate
+
+
   #add Branch NeutralEFlowMerger/eflowTowers Neutrals ParticleFlowCandidate
   #add Branch HCal/eflowNeutralHadrons NeutralsHads ParticleFlowCandidate
   #add Branch ScalarHT/energy ScalarHT ScalarHT

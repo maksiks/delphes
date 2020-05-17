@@ -167,6 +167,7 @@ Candidate::Candidate() :
   NSubJetsTrimmed(0),
   NSubJetsPruned(0),
   NSubJetsSoftDropped(0),
+  puppiW(1),
   ExclYmerge23(0),
   ExclYmerge34(0),
   ExclYmerge45(0),

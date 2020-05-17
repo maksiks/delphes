@@ -200,7 +200,7 @@ std::pair<TLorentzVector, TLorentzVector> TreeWriter::FillParticlesCustom(Candid
     std::cout << "XXXXXX HAS NO FUCKING GEN PARTICLE " << std::endl;
   }
 
-  std::cout << " " << std::endl;
+  //std::cout << " " << std::endl;
 
   TIter it1(candidate->GetCandidates());
   it1.Reset();
@@ -284,19 +284,22 @@ std::pair<TLorentzVector, TLorentzVector> TreeWriter::FillParticlesCustom(Candid
     }
   }
 
-  std::cout << " " << std::endl;
+  if (verbose){
+    std::cout << " " << std::endl;
+    std::cout << "Now printing hard and soft components" << std::endl;
+  }
 
-  std::cout << "Now printing hard and soft components" << std::endl;
   for (unsigned int i = 0; i < hard.size(); i++){
-    std::cout << "Hard element Pt Eta Phi E: " << hard[i].Pt() << " " << hard[i].Eta() << " " << hard[i].Phi() << " " << hard[i].E() << " " << std::endl;
     hardp4 += hard[i];
+    if (verbose)
+      std::cout << "Hard element Pt Eta Phi E: " << hard[i].Pt() << " " << hard[i].Eta() << " " << hard[i].Phi() << " " << hard[i].E() << " " << std::endl;
   }
   for (unsigned int i = 0; i < soft.size(); i++){
-    std::cout << "Soft element Pt Eta Phi E: " << soft[i].Pt() << " " << soft[i].Eta() << " " << soft[i].Phi() << " " << soft[i].E() << " " << std::endl;
     softp4 += soft[i];
+    if (verbose)
+      std::cout << "Soft element Pt Eta Phi E: " << soft[i].Pt() << " " << soft[i].Eta() << " " << soft[i].Phi() << " " << soft[i].E() << " " << std::endl;
   }
   return std::make_pair(hardp4, softp4);
-
 }
 
 //------------------------------------------------------------------------------
@@ -359,8 +362,8 @@ void TreeWriter::ProcessParticles(ExRootTreeBranch *branch, TObjArray *array)
     entry->Eta = eta;
     entry->Phi = momentum.Phi();
     entry->PT = pt;
-    if (candidate->Status==1)
-      std::cout << "XXXXXX PT, Eta, IsPU, PID, E:  " << pt << " " << eta << " " << candidate->IsPU << " " << candidate->PID << " " << momentum.E() << std::endl;
+    //    if (candidate->Status==1)
+    //std::cout << "XXXXXX PT, Eta, IsPU, PID, E:  " << pt << " " << eta << " " << candidate->IsPU << " " << candidate->PID << " " << momentum.E() << std::endl;
 
     entry->Rapidity = rapidity;
 
@@ -537,7 +540,7 @@ void TreeWriter::ProcessTracks(ExRootTreeBranch *branch, TObjArray *array)
 void TreeWriter::ProcessTowers(ExRootTreeBranch *branch, TObjArray *array)
 {
 
-  std::cout << "Calling Towers" << std::endl;
+  //std::cout << "Calling Towers" << std::endl;
 
   TIter iterator(array);
   Candidate *candidate = 0;
@@ -586,7 +589,7 @@ void TreeWriter::ProcessTowers(ExRootTreeBranch *branch, TObjArray *array)
 void TreeWriter::ProcessParticleFlowCandidates(ExRootTreeBranch *branch, TObjArray *array)
 {
 
-  std::cout << "Calling ParticleFlowCandidates" << std::endl;
+  //std::cout << "Calling ParticleFlowCandidates" << std::endl;
 
   TIter iterator(array);
   Candidate *candidate = 0;
@@ -600,8 +603,8 @@ void TreeWriter::ProcessParticleFlowCandidates(ExRootTreeBranch *branch, TObjArr
   while((candidate = static_cast<Candidate *>(iterator.Next())))
   {
 
-    std::cout << "==============================================" << std::endl;
-    std::cout << "==============================================" << std::endl;
+    //std::cout << "==============================================" << std::endl;
+    //std::cout << "==============================================" << std::endl;
 
     const TLorentzVector &position = candidate->Position;
 
@@ -618,6 +621,8 @@ void TreeWriter::ProcessParticleFlowCandidates(ExRootTreeBranch *branch, TObjArr
     entry->PID = candidate->PID;
 
     entry->Charge = candidate->Charge;
+
+    entry->PuppiW = candidate->puppiW;
 
     entry->EtaOuter = eta;
     entry->PhiOuter = position.Phi();
@@ -658,9 +663,7 @@ void TreeWriter::ProcessParticleFlowCandidates(ExRootTreeBranch *branch, TObjArr
     entry->Phi = phi;
     entry->CtgTheta = ctgTheta;
 
-
-    std::cout << "Reconstructed PID, PT, ETA, PHI, E:   " << candidate->PID << " " << pt << " " << momentum.Eta() << " " << phi << " " << e << std::endl;
-
+    //std::cout << "Reconstructed PID, PT, ETA, PHI, E:   " << candidate->PID << " " << pt << " " << momentum.Eta() << " " << phi << " " << e << std::endl;
 
     particle = static_cast<Candidate *>(candidate->GetCandidates()->At(0));
     const TLorentzVector &initialPosition = particle->Position;
@@ -683,14 +686,14 @@ void TreeWriter::ProcessParticleFlowCandidates(ExRootTreeBranch *branch, TObjArr
     entry->T = position.T() * 1.0E-3 / c_light;
     entry->NTimeHits = candidate->NTimeHits;
 
-    std::pair<TLorentzVector,TLorentzVector> p4s = FillParticlesCustom(candidate, &entry->Particles, true);
+    std::pair<TLorentzVector,TLorentzVector> p4s = FillParticlesCustom(candidate, &entry->Particles, false);
     TLorentzVector hard = p4s.first;
     TLorentzVector soft = p4s.second;
 
-    std::cout << " " << std::endl;
+    //std::cout << " " << std::endl;
 
-    std::cout << "Sum hard Pt, Eta, Phi, E " << hard.Pt() << " " << hard.Eta() << " " << hard.Phi() << " " << hard.E() << std::endl; 
-    std::cout << "Sum soft Pt, Eta, Phi, E " << soft.Pt() << " " << soft.Eta() << " " << soft.Phi() << " " << soft.E() << std::endl; 
+    //std::cout << "Sum hard Pt, Eta, Phi, E " << hard.Pt() << " " << hard.Eta() << " " << hard.Phi() << " " << hard.E() << std::endl; 
+    //std::cout << "Sum soft Pt, Eta, Phi, E " << soft.Pt() << " " << soft.Eta() << " " << soft.Phi() << " " << soft.E() << std::endl; 
 
     entry->hardfrac = hard.E() / (hard.E()+soft.E());
     entry->pufrac = soft.E() / (hard.E()+soft.E());
@@ -698,9 +701,9 @@ void TreeWriter::ProcessParticleFlowCandidates(ExRootTreeBranch *branch, TObjArr
     //entry->hardfrac = hard.E() / (hard+soft).E();
     //entry->pufrac = soft.E() / (hard+soft).E();
 
-    std::cout << "Sum of hard and soft " << (hard+soft).Pt() << " " << (hard+soft).Eta() << " " << (hard+soft).Phi() << " " << (hard+soft).E() << std::endl; 
-    std::cout << "Hard ratio: " << hard.E() / (hard+soft).E() << std::endl; 
-    std::cout << "Soft ratio: " << soft.E() / (hard+soft).E() << std::endl; 
+    //std::cout << "Sum of hard and soft " << (hard+soft).Pt() << " " << (hard+soft).Eta() << " " << (hard+soft).Phi() << " " << (hard+soft).E() << std::endl; 
+    //std::cout << "Hard ratio: " << hard.E() / (hard+soft).E() << std::endl; 
+    //std::cout << "Soft ratio: " << soft.E() / (hard+soft).E() << std::endl; 
    
   }
 }

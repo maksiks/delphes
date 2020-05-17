@@ -530,6 +530,9 @@ public:
   Float_t Phi; // track azimuthal angle
   Float_t CtgTheta; // track cotangent of theta
 
+
+  Float_t PuppiW;
+
   Float_t EtaOuter; // track pseudorapidity at the tracker edge
   Float_t PhiOuter; // track azimuthal angle at the tracker edge
 
@@ -714,6 +717,10 @@ public:
   // N-subjettiness variables
 
   Float_t Tau[5];
+
+  // Puppi weight
+
+  Double_t puppiW;
 
   // Other Substructure variables
 

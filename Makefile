@@ -424,6 +424,7 @@ tmp/modules/ModulesDict.$(SrcSuf): \
 	modules/TrackCountingTauTagging.h \
 	modules/TreeWriter.h \
 	modules/Merger.h \
+	modules/PuppiMerger.h \
 	modules/LeptonDressing.h \
 	modules/PileUpMerger.h \
 	modules/JetPileUpSubtractor.h \
@@ -864,6 +865,15 @@ tmp/modules/Merger.$(ObjSuf): \
 	external/ExRootAnalysis/ExRootClassifier.h \
 	external/ExRootAnalysis/ExRootFilter.h \
 	external/ExRootAnalysis/ExRootResult.h
+tmp/modules/PuppiMerger.$(ObjSuf): \
+	modules/PuppiMerger.$(SrcSuf) \
+	modules/PuppiMerger.h \
+	classes/DelphesClasses.h \
+	classes/DelphesFactory.h \
+	classes/DelphesFormula.h \
+	external/ExRootAnalysis/ExRootClassifier.h \
+	external/ExRootAnalysis/ExRootFilter.h \
+	external/ExRootAnalysis/ExRootResult.h
 tmp/modules/MomentumSmearing.$(ObjSuf): \
 	modules/MomentumSmearing.$(SrcSuf) \
 	modules/MomentumSmearing.h \
@@ -1184,6 +1194,7 @@ DELPHES_OBJ +=  \
 	tmp/modules/JetPileUpSubtractor.$(ObjSuf) \
 	tmp/modules/LeptonDressing.$(ObjSuf) \
 	tmp/modules/Merger.$(ObjSuf) \
+	tmp/modules/PuppiMerger.$(ObjSuf) \
 	tmp/modules/MomentumSmearing.$(ObjSuf) \
 	tmp/modules/OldCalorimeter.$(ObjSuf) \
 	tmp/modules/ParticleDensity.$(ObjSuf) \
@@ -1933,6 +1944,10 @@ modules/EnergyScale.h: \
 	@touch $@
 
 modules/Merger.h: \
+	classes/DelphesModule.h
+	@touch $@
+
+modules/PuppiMerger.h: \
 	classes/DelphesModule.h
 	@touch $@
 
