@@ -692,10 +692,15 @@ void TreeWriter::ProcessParticleFlowCandidates(ExRootTreeBranch *branch, TObjArr
     std::cout << "Sum hard Pt, Eta, Phi, E " << hard.Pt() << " " << hard.Eta() << " " << hard.Phi() << " " << hard.E() << std::endl; 
     std::cout << "Sum soft Pt, Eta, Phi, E " << soft.Pt() << " " << soft.Eta() << " " << soft.Phi() << " " << soft.E() << std::endl; 
 
-    entry->hardfrac = hard.E() / (hard+soft).E();
-    entry->pufrac = soft.E() / (hard+soft).E();
+    entry->hardfrac = hard.E() / (hard.E()+soft.E());
+    entry->pufrac = soft.E() / (hard.E()+soft.E());
+
+    //entry->hardfrac = hard.E() / (hard+soft).E();
+    //entry->pufrac = soft.E() / (hard+soft).E();
 
     std::cout << "Sum of hard and soft " << (hard+soft).Pt() << " " << (hard+soft).Eta() << " " << (hard+soft).Phi() << " " << (hard+soft).E() << std::endl; 
+    std::cout << "Hard ratio: " << hard.E() / (hard+soft).E() << std::endl; 
+    std::cout << "Soft ratio: " << soft.E() / (hard+soft).E() << std::endl; 
    
   }
 }
