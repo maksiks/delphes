@@ -132,8 +132,17 @@ void TreeWriter::Finish()
 
 //------------------------------------------------------------------------------
 
-void TreeWriter::FillParticles(Candidate *candidate, TRefArray *array)
+void TreeWriter::FillParticles(Candidate *candidate, TRefArray *array, bool verbose)
 {
+
+  if(candidate->GetCandidates()->GetEntriesFast() == 0 && verbose){
+    std::cout << "XXXXXX HAS NO FUCKING GEN PARTICLE " << std::endl;
+  }
+
+  //if(verbose){
+    //std::cout << "Cand PT1, PT2, PU, ETA: " << candidate->PT << " " << candidate->Momentum.Pt() << " " << candidate->IsPU << " " << candidate->Momentum.Eta() << std::endl;
+    //std::cout << candidate->GetCandidates()->GetEntriesFast() << std::endl;
+  //}
   TIter it1(candidate->GetCandidates());
   it1.Reset();
   array->Clear();
@@ -145,6 +154,10 @@ void TreeWriter::FillParticles(Candidate *candidate, TRefArray *array)
     // particle
     if(candidate->GetCandidates()->GetEntriesFast() == 0)
     {
+      if (verbose){
+	std::cout << "Particle PU, ID, PT1, PT2, ETA, E:    " << candidate->IsPU << " " << candidate->PID << " " << candidate->PT << " " << candidate->Momentum.Pt()  << " " <<  candidate->Momentum.Eta() << " " <<  candidate->Momentum.E() << std::endl;
+	printf("%p\n",candidate);
+      }
       array->Add(candidate);
       continue;
     }
@@ -153,6 +166,10 @@ void TreeWriter::FillParticles(Candidate *candidate, TRefArray *array)
     candidate = static_cast<Candidate *>(candidate->GetCandidates()->At(0));
     if(candidate->GetCandidates()->GetEntriesFast() == 0)
     {
+      if (verbose){
+	std::cout << "Track PU, ID, PT1, PT2, ETA, E:    " << candidate->IsPU << " " << candidate->PID << " " << candidate->PT << " " << candidate->Momentum.Pt() << " " << candidate->Momentum.Eta() << " " <<  candidate->Momentum.E() << std::endl;
+	printf("%p\n",candidate);
+      }
       array->Add(candidate);
       continue;
     }
@@ -161,6 +178,9 @@ void TreeWriter::FillParticles(Candidate *candidate, TRefArray *array)
     it2.Reset();
     while((candidate = static_cast<Candidate *>(it2.Next())))
     {
+      if (verbose)
+	std::cout << "Tower PU, ID, PT, ETA, PHI, E:    " << candidate->IsPU << " " << candidate->PID  << " " << candidate->Momentum.Pt() << " " <<  candidate->Momentum.Eta() << " " <<  candidate->Momentum.Phi() << " " << candidate->Momentum.E() << std::endl;
+
       array->Add(candidate->GetCandidates()->At(0));
     }
   }
@@ -168,8 +188,123 @@ void TreeWriter::FillParticles(Candidate *candidate, TRefArray *array)
 
 //------------------------------------------------------------------------------
 
+std::pair<TLorentzVector, TLorentzVector> TreeWriter::FillParticlesCustom(Candidate *candidate, TRefArray *array, bool verbose)
+{
+
+  std::vector<TLorentzVector> hard,soft;
+  TLorentzVector hardp4,softp4;
+  hardp4.SetPtEtaPhiE(0,0,0,0);
+  softp4.SetPtEtaPhiE(0,0,0,0);
+
+  if(candidate->GetCandidates()->GetEntriesFast() == 0 && verbose){
+    std::cout << "XXXXXX HAS NO FUCKING GEN PARTICLE " << std::endl;
+  }
+
+  std::cout << " " << std::endl;
+
+  TIter it1(candidate->GetCandidates());
+  it1.Reset();
+  array->Clear();
+  
+  while((candidate = static_cast<Candidate *>(it1.Next())))
+  {
+    TIter it2(candidate->GetCandidates());
+
+    // particle
+    if(candidate->GetCandidates()->GetEntriesFast() == 0)
+    {
+      if (verbose){
+	std::cout << "Particle PU, ID, PT, ETA, PHI, E:    " << candidate->IsPU << " " << candidate->PID << " " << candidate->Momentum.Pt()  << " " <<  candidate->Momentum.Eta() << " " <<  candidate->Momentum.Phi() << " " << candidate->Momentum.E() << std::endl;
+      }
+      array->Add(candidate);
+      
+      TLorentzVector tmp;
+      tmp.SetPtEtaPhiE(candidate->Momentum.Pt(),candidate->Momentum.Eta(),candidate->Momentum.Phi(),candidate->Momentum.E());
+
+      if (candidate->IsPU){
+	if (std::find(soft.begin(), soft.end(), tmp) == soft.end()){	
+	  soft.push_back(tmp);
+	}
+      }
+      else{
+	if (std::find(hard.begin(), hard.end(), tmp) == hard.end()){
+	  hard.push_back(tmp);
+	}
+      }
+
+      continue;
+    }
+
+    // track
+    candidate = static_cast<Candidate *>(candidate->GetCandidates()->At(0));
+    if(candidate->GetCandidates()->GetEntriesFast() == 0)
+    {
+      if (verbose){
+	std::cout << "Track PU, ID, PT, ETA, PHI, E:    " << candidate->IsPU << " " << candidate->PID  << " " << candidate->Momentum.Pt() << " " << candidate->Momentum.Eta() << " " <<  candidate->Momentum.Phi() << " " << candidate->Momentum.E() << std::endl;
+      }
+      array->Add(candidate);
+      TLorentzVector tmp;
+      tmp.SetPtEtaPhiE(candidate->Momentum.Pt(),candidate->Momentum.Eta(),candidate->Momentum.Phi(),candidate->Momentum.E());
+
+      if (candidate->IsPU){
+	if (std::find(soft.begin(), soft.end(), tmp) == soft.end()){
+	  soft.push_back(tmp);
+	}
+      }
+      else{
+	if (std::find(hard.begin(), hard.end(), tmp) == hard.end()){
+	  hard.push_back(tmp);
+	}
+      }
+      continue;
+    }
+
+    // tower
+    it2.Reset();
+    while((candidate = static_cast<Candidate *>(it2.Next())))
+    {
+      if (verbose)
+	std::cout << "Tower PU, ID, PT, ETA, PHI, E:    " << candidate->IsPU << " " << candidate->PID << " " << candidate->Momentum.Pt() << " " <<  candidate->Momentum.Eta() << " " <<  candidate->Momentum.Phi() << " " << candidate->Momentum.E() << std::endl;
+
+      array->Add(candidate->GetCandidates()->At(0));
+      Candidate *candidate_tmp = static_cast<Candidate *>(candidate->GetCandidates()->At(0));      
+      TLorentzVector tmp;
+      tmp.SetPtEtaPhiE(candidate_tmp->Momentum.Pt(),candidate_tmp->Momentum.Eta(),candidate_tmp->Momentum.Phi(),candidate_tmp->Momentum.E());
+
+      if (candidate->IsPU){
+	if (std::find(soft.begin(), soft.end(), tmp) == soft.end()){
+	  soft.push_back(tmp);
+	}
+      }
+      else{
+	if (std::find(hard.begin(), hard.end(), tmp) == hard.end()){	
+	  hard.push_back(tmp);
+	}
+      }
+    }
+  }
+
+  std::cout << " " << std::endl;
+
+  std::cout << "Now printing hard and soft components" << std::endl;
+  for (unsigned int i = 0; i < hard.size(); i++){
+    std::cout << "Hard element Pt Eta Phi E: " << hard[i].Pt() << " " << hard[i].Eta() << " " << hard[i].Phi() << " " << hard[i].E() << " " << std::endl;
+    hardp4 += hard[i];
+  }
+  for (unsigned int i = 0; i < soft.size(); i++){
+    std::cout << "Soft element Pt Eta Phi E: " << soft[i].Pt() << " " << soft[i].Eta() << " " << soft[i].Phi() << " " << soft[i].E() << " " << std::endl;
+    softp4 += soft[i];
+  }
+  return std::make_pair(hardp4, softp4);
+
+}
+
+//------------------------------------------------------------------------------
+
 void TreeWriter::ProcessParticles(ExRootTreeBranch *branch, TObjArray *array)
 {
+  //std::cout << "Calling Particles" << std::endl;
+
   TIter iterator(array);
   Candidate *candidate = 0;
   GenParticle *entry = 0;
@@ -224,6 +359,8 @@ void TreeWriter::ProcessParticles(ExRootTreeBranch *branch, TObjArray *array)
     entry->Eta = eta;
     entry->Phi = momentum.Phi();
     entry->PT = pt;
+    if (candidate->Status==1)
+      std::cout << "XXXXXX PT, Eta, IsPU, PID, E:  " << pt << " " << eta << " " << candidate->IsPU << " " << candidate->PID << " " << momentum.E() << std::endl;
 
     entry->Rapidity = rapidity;
 
@@ -309,6 +446,9 @@ void TreeWriter::ProcessVertices(ExRootTreeBranch *branch, TObjArray *array)
 
 void TreeWriter::ProcessTracks(ExRootTreeBranch *branch, TObjArray *array)
 {
+
+  std::cout << "Calling Tracks" << std::endl;
+
   TIter iterator(array);
   Candidate *candidate = 0;
   Candidate *particle = 0;
@@ -396,6 +536,9 @@ void TreeWriter::ProcessTracks(ExRootTreeBranch *branch, TObjArray *array)
 
 void TreeWriter::ProcessTowers(ExRootTreeBranch *branch, TObjArray *array)
 {
+
+  std::cout << "Calling Towers" << std::endl;
+
   TIter iterator(array);
   Candidate *candidate = 0;
   Tower *entry = 0;
@@ -443,6 +586,8 @@ void TreeWriter::ProcessTowers(ExRootTreeBranch *branch, TObjArray *array)
 void TreeWriter::ProcessParticleFlowCandidates(ExRootTreeBranch *branch, TObjArray *array)
 {
 
+  std::cout << "Calling ParticleFlowCandidates" << std::endl;
+
   TIter iterator(array);
   Candidate *candidate = 0;
   Candidate *particle = 0;
@@ -454,6 +599,10 @@ void TreeWriter::ProcessParticleFlowCandidates(ExRootTreeBranch *branch, TObjArr
   iterator.Reset();
   while((candidate = static_cast<Candidate *>(iterator.Next())))
   {
+
+    std::cout << "==============================================" << std::endl;
+    std::cout << "==============================================" << std::endl;
+
     const TLorentzVector &position = candidate->Position;
 
     cosTheta = TMath::Abs(position.CosTheta());
@@ -509,6 +658,10 @@ void TreeWriter::ProcessParticleFlowCandidates(ExRootTreeBranch *branch, TObjArr
     entry->Phi = phi;
     entry->CtgTheta = ctgTheta;
 
+
+    std::cout << "Reconstructed PID, PT, ETA, PHI, E:   " << candidate->PID << " " << pt << " " << momentum.Eta() << " " << phi << " " << e << std::endl;
+
+
     particle = static_cast<Candidate *>(candidate->GetCandidates()->At(0));
     const TLorentzVector &initialPosition = particle->Position;
 
@@ -518,6 +671,7 @@ void TreeWriter::ProcessParticleFlowCandidates(ExRootTreeBranch *branch, TObjArr
     entry->T = initialPosition.T() * 1.0E-3 / c_light;
 
     entry->VertexIndex = candidate->ClusterIndex;
+    //std::cout << entry->VertexIndex << std::endl;
 
     entry->Eem = candidate->Eem;
     entry->Ehad = candidate->Ehad;
@@ -529,8 +683,20 @@ void TreeWriter::ProcessParticleFlowCandidates(ExRootTreeBranch *branch, TObjArr
     entry->T = position.T() * 1.0E-3 / c_light;
     entry->NTimeHits = candidate->NTimeHits;
 
-    FillParticles(candidate, &entry->Particles);
+    std::pair<TLorentzVector,TLorentzVector> p4s = FillParticlesCustom(candidate, &entry->Particles, true);
+    TLorentzVector hard = p4s.first;
+    TLorentzVector soft = p4s.second;
 
+    std::cout << " " << std::endl;
+
+    std::cout << "Sum hard Pt, Eta, Phi, E " << hard.Pt() << " " << hard.Eta() << " " << hard.Phi() << " " << hard.E() << std::endl; 
+    std::cout << "Sum soft Pt, Eta, Phi, E " << soft.Pt() << " " << soft.Eta() << " " << soft.Phi() << " " << soft.E() << std::endl; 
+
+    entry->hardfrac = hard.E() / (hard+soft).E();
+    entry->pufrac = soft.E() / (hard+soft).E();
+
+    std::cout << "Sum of hard and soft " << (hard+soft).Pt() << " " << (hard+soft).Eta() << " " << (hard+soft).Phi() << " " << (hard+soft).E() << std::endl; 
+   
   }
 }
 
@@ -638,6 +804,9 @@ void TreeWriter::ProcessElectrons(ExRootTreeBranch *branch, TObjArray *array)
     entry->EhadOverEem = 0.0;
 
     entry->Particle = candidate->GetCandidates()->At(0);
+    //std::cout << pt << std::endl;
+    //Candidate *candidate_tmp = static_cast<Candidate *>(candidate->GetCandidates()->At(0));
+    //std::cout << candidate_tmp->Momentum.Pt() << std::endl;
   }
 }
 

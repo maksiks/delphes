@@ -560,6 +560,9 @@ public:
   Float_t ErrorD0; // track transverse impact parameter error
   Float_t ErrorDZ; // track longitudinal impact parameter error
 
+  Float_t hardfrac; 
+  Float_t pufrac;
+
   Int_t VertexIndex; // reference to vertex
 
   static CompBase *fgCompare; //!

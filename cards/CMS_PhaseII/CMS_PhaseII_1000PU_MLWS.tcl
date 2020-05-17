@@ -132,7 +132,8 @@ module PileUpMerger PileUpMerger {
   set VertexOutputArray vertices
 
   # pre-generated minbias input file
-  set PileUpFile /eos/cms/store/group/upgrade/delphes/PhaseII/MinBias_100k.pileup
+  set PileUpFile /local/bmaier/papu/data/PileUp.data
+
   #set PileUpFile MinBias.pileup
 
   # average expected pile up
@@ -476,7 +477,7 @@ module TrackSmearing TrackSmearing {
   # magnetic field
   set Bz 4.0
 
-  source trackResolution.tcl
+  source ../trackResolutionCMS.tcl
 }
 
 

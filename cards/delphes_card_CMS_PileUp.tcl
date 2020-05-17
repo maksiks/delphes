@@ -58,6 +58,8 @@ set ExecutionPath {
 
   ScalarHT
 
+  ParticleFlow
+
   TreeWriter
 }
 
@@ -72,7 +74,7 @@ module PileUpMerger PileUpMerger {
   set VertexOutputArray vertices
 
   # pre-generated minbias input file
-  set PileUpFile MinBias.pileup
+  set PileUpFile /local/bmaier/papu/data/PileUp.data
 
   # average expected pile up
   set MeanPileUp 50
@@ -221,6 +223,31 @@ module MomentumSmearing MuonMomentumSmearing {
                          (abs(eta) > 0.5 && abs(eta) <= 1.5) * (pt > 0.1) * sqrt(0.015^2 + pt^2*1.5e-4^2) +
                          (abs(eta) > 1.5 && abs(eta) <= 2.5) * (pt > 0.1) * sqrt(0.025^2 + pt^2*3.5e-4^2)}
 }
+
+
+##################################
+# Primary vertex reconstruction
+##################################
+
+module VertexFinder VertexFinder {
+
+  set InputArray TrackSmearing/tracks
+#  set InputArray TimeSmearing/tracks
+#  set InputArray TrackMerger/tracks
+
+  set OutputArray tracks
+  set VertexOutputArray vertices
+
+  set MinPT 1.0
+  set MinNDF 4
+  set SeedMinPT 1.0
+
+  set Sigma     3.0
+  set MaxEta    10.0
+  set GrowSeeds 1
+
+}
+
 
 ##############
 # Track merger
@@ -560,7 +587,7 @@ module FastJetFinder GenJetFinder {
 
   # algorithm: 1 CDFJetClu, 2 MidPoint, 3 SIScone, 4 kt, 5 Cambridge/Aachen, 6 antikt
   set JetAlgorithm 6
-  set ParameterR 0.5
+  set ParameterR 0.4
 
   set JetPTMin 20.0
 }
@@ -590,7 +617,7 @@ module FastJetFinder FastJetFinder {
 
   # jet algorithm: 1 CDFJetClu, 2 MidPoint, 3 SIScone, 4 kt, 5 Cambridge/Aachen, 6 antikt
   set JetAlgorithm 6
-  set ParameterR 0.5
+  set ParameterR 0.4
 
   set JetPTMin 20.0
 }
@@ -612,7 +639,7 @@ module PileUpJetID PileUpJetID {
   set OutputArray jets
 
   set UseConstituents 0
-  set ParameterR 0.5
+  set ParameterR 0.4
 
   set JetPTMin 20.0
 }
@@ -671,7 +698,7 @@ module Isolation PhotonIsolation {
 
   set OutputArray photons
 
-  set DeltaRMax 0.5
+  set DeltaRMax 0.4
 
   set PTMin 0.5
 
@@ -706,7 +733,7 @@ module Isolation ElectronIsolation {
 
   set OutputArray electrons
 
-  set DeltaRMax 0.5
+  set DeltaRMax 0.4
 
   set PTMin 0.5
 
@@ -742,7 +769,7 @@ module Isolation MuonIsolation {
 
   set OutputArray muons
 
-  set DeltaRMax 0.5
+  set DeltaRMax 0.4
 
   set PTMin 0.5
 
@@ -757,6 +784,15 @@ module Merger MissingET {
 # add InputArray InputArray
   add InputArray EFlowMergerAllTracks/eflow
   set MomentumOutputArray momentum
+}
+
+###################
+# PF merger
+###################
+
+module Merger ParticleFlow {
+  add InputArray EFlowMergerAllTracks/eflow
+  set OutputArray eflow
 }
 
 
@@ -785,7 +821,7 @@ module JetFlavorAssociation JetFlavorAssociation {
   set ParticleLHEFInputArray Delphes/allParticlesLHEF
   set JetInputArray JetEnergyScale/jets
 
-  set DeltaR 0.5
+  set DeltaR 0.4
   set PartonPTMin 1.0
   set PartonEtaMax 2.5
 
@@ -825,7 +861,7 @@ module TauTagging TauTagging {
   set PartonInputArray Delphes/partons
   set JetInputArray JetEnergyScale/jets
 
-  set DeltaR 0.5
+  set DeltaR 0.4
 
   set TauPTMin 1.0
 
@@ -862,7 +898,9 @@ module UniqueObjectFinder UniqueObjectFinder {
 
 module TreeWriter TreeWriter {
 # add Branch InputArray BranchName BranchClass
-  add Branch Delphes/allParticles Particle GenParticle
+
+  #add Branch Delphes/allParticles Particle GenParticle
+  add Branch PileUpMerger/stableParticles PileUpMix GenParticle
 
 #  add Branch TrackMerger/tracks Track Track
 #  add Branch Calorimeter/towers Tower Tower
@@ -880,6 +918,9 @@ module TreeWriter TreeWriter {
   add Branch UniqueObjectFinder/muons Muon Muon
   add Branch MissingET/momentum MissingET MissingET
   add Branch ScalarHT/energy ScalarHT ScalarHT
+
+  add Branch EFlowMergerAllTracks/eflow ParticleFlowCandidate ParticleFlowCandidate 
+
   add Branch Rho/rho Rho Rho
   add Branch PileUpMerger/vertices Vertex Vertex
 }

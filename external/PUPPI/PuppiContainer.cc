@@ -181,6 +181,11 @@ const std::vector<double> PuppiContainer::puppiWeights() {
     //Basic Cuts      
     if(pWeight                         < fPuppiWeightCut) pWeight = 0;  //==> Elminate the low Weight stuff
     if(pWeight*fPFParticles[i0].pt()   < fPuppiAlgo[pPupId].neutralPt(fNPV) && fRecoParticles[i0].id == 0 ) pWeight = 0;  //threshold cut on the neutral Pt
+    
+
+    pWeight = 1.;
+
+
     fWeights .push_back(pWeight);
     //Now get rid of the thrown out weights for the particle collection
     if(pWeight == 0) continue;

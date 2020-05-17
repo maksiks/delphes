@@ -97,10 +97,10 @@ module PileUpMerger PileUpMerger {
   set VertexOutputArray vertices
 
   # pre-generated minbias input file
-  set PileUpFile ../eos/cms/store/group/upgrade/delphes/PhaseII/MinBias_100k.pileup
+  set PileUpFile /local/bmaier/papu/data/PileUp.data
 
   # average expected pile up
-  set MeanPileUp 200
+  set MeanPileUp 100
 
   # maximum spread in the beam direction in m
   set ZVertexSpread 0.25
@@ -1034,7 +1034,8 @@ module StatusPidFilter GenParticleFilter {
 
 module TreeWriter TreeWriter {
 # add Branch InputArray BranchName BranchClass
-  add Branch GenParticleFilter/filteredParticles Particle GenParticle
+  #add Branch GenParticleFilter/filteredParticles Particle GenParticle
+  add Branch PileUpMerger/stableParticles PileUpMix GenParticle
   add Branch PileUpMerger/vertices Vertex Vertex
 
   add Branch GenJetFinder/jets GenJet Jet
@@ -1055,6 +1056,9 @@ module TreeWriter TreeWriter {
   add Branch MissingET/momentum MissingET MissingET
   add Branch PuppiMissingET/momentum PuppiMissingET MissingET
   add Branch GenPileUpMissingET/momentum GenPileUpMissingET MissingET
-  add Branch ScalarHT/energy ScalarHT ScalarHT
+  add Branch RunPUPPI/PuppiParticles ParticleFlowCandidate ParticleFlowCandidate
+  #add Branch NeutralEFlowMerger/eflowTowers Neutrals ParticleFlowCandidate
+  #add Branch HCal/eflowNeutralHadrons NeutralsHads ParticleFlowCandidate
+  #add Branch ScalarHT/energy ScalarHT ScalarHT
 }
 

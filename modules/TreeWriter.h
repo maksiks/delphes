@@ -28,7 +28,7 @@
  */
 
 #include "classes/DelphesModule.h"
-
+#include "TLorentzVector.h"
 #include <map>
 
 class TClass;
@@ -49,7 +49,8 @@ public:
   void Finish();
 
 private:
-  void FillParticles(Candidate *candidate, TRefArray *array);
+  void FillParticles(Candidate *candidate, TRefArray *array, bool verbose=false);
+  std::pair<TLorentzVector,TLorentzVector> FillParticlesCustom(Candidate *candidate, TRefArray *array, bool verbose=false);
 
   void ProcessParticles(ExRootTreeBranch *branch, TObjArray *array);
   void ProcessVertices(ExRootTreeBranch *branch, TObjArray *array);
