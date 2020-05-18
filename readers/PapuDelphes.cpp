@@ -23,6 +23,10 @@ using namespace std;
 
 //---------------------------------------------------------------------------
 
+
+static int NMAX = 2000;
+
+
 static bool interrupted = false;
 
 void SignalHandler(int sig)
@@ -185,6 +189,7 @@ int main(int argc, char *argv[])
 
   vector<PFCand> input_particles;
   vector<PFCand> output_particles;
+  output_particles.reserve(2000);
   tout->Branch("particles", &output_particles);
 
   auto ho = HierarchicalOrdering<4, 10>();
@@ -216,6 +221,8 @@ int main(int argc, char *argv[])
       }
       ++cluster_idx;
     }
+
+    output_particles.resize(NMAX);
 
     tout->Fill();
   }
