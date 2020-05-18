@@ -7,22 +7,11 @@
 #include <functional>
 #include <time>
 
-#include <signal.h>
-
-#include "TApplication.h"
 #include "TROOT.h"
 
-#include "TDatabasePDG.h"
 #include "TFile.h"
+#include "TTree.h"
 #include "TLorentzVector.h"
-#include "TObjArray.h"
-#include "TParticlePDG.h"
-#include "TStopwatch.h"
-
-#include "classes/DelphesClasses.h"
-#include "classes/DelphesFactory.h"
-#include "classes/DelphesHepMCReader.h"
-#include "modules/Delphes.h"
 
 #include "ExRootAnalysis/ExRootProgressBar.h"
 #include "ExRootAnalysis/ExRootTreeBranch.h"
@@ -173,6 +162,8 @@ private:
 
 int main(int argc, char *argv[])
 {
+
+  srand(time(NULL));
 
   if(argc < 3) {
     cout << " Usage: " << appName << " input_file"
