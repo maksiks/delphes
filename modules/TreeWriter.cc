@@ -136,7 +136,7 @@ void TreeWriter::FillParticles(Candidate *candidate, TRefArray *array, bool verb
 {
 
   if(candidate->GetCandidates()->GetEntriesFast() == 0 && verbose){
-    std::cout << "XXXXXX HAS NO FUCKING GEN PARTICLE " << std::endl;
+    std::cout << "XXXXXX HAS NO GEN PARTICLE " << std::endl;
   }
 
   //if(verbose){
@@ -197,7 +197,7 @@ std::pair<TLorentzVector, TLorentzVector> TreeWriter::FillParticlesCustom(Candid
   softp4.SetPtEtaPhiE(0,0,0,0);
 
   if(candidate->GetCandidates()->GetEntriesFast() == 0 && verbose){
-    std::cout << "XXXXXX HAS NO FUCKING GEN PARTICLE " << std::endl;
+    std::cout << "XXXXXX HAS NO GEN PARTICLE " << std::endl;
   }
 
   //std::cout << " " << std::endl;
