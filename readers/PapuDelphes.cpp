@@ -3,9 +3,11 @@
 #include <stdexcept>
 #include <vector>
 #include <array>
-#include <stdlib>
+#include <stdlib.h>
 #include <functional>
-#include <time>
+#include <time.h>
+#include <math.h>
+#include <numeric>
 
 #include "TROOT.h"
 
@@ -42,45 +44,6 @@ struct PFCand
 };
 
 
-template <int K, int N>
-class HierarchicalOrdering {
-public:
-    HierarchicalOrdering() { }
-
-    vector<vector<PFCand*>> 
-    fit(vector<PFCand> &particles)
-    {
-        vector<PFCand*> p_particles;
-        for (auto& p : particles)
-            p_particles.push_back(&p);
-
-        return _recursive_fit(p_particles);
-    }
-    
-private:
-    vector<vector<PFCand*>> 
-     _recursive_fit(vector<PFCand*> &particles)
-    {
-        vector<vector<PFCand*>> clusters;
-
-        kmeans = KMeans<K>(particles);
-        for (int i_k=0; i_k!=K; ++i_k) {
-            auto& cluster = kmeans.get_clusters()[i_k];
-            if (cluster.size() > N) {
-                split_clusters = _recursive_fit(cluster);
-                for (auto& c : split_clusters) {
-                    clusters.append(c);
-                }
-            } else {
-                clusters.append(cluster);
-            } 
-        }
-        return cluster;
-    }
-
-};
-
-
 template<int K>
 class KMeans { 
 public:
@@ -90,7 +53,7 @@ public:
         array<int, K> i_centroids;
         for (int i=0; i!=K; ++i) {
             while (true) {
-                auto i_p = rand() % particles.size();
+                int i_p = rand() % particles.size();
                 bool found = false;
                 for (int j=0; j!=i; ++j) {
                     found = (i_centroids[j] == i_p);
@@ -99,15 +62,15 @@ public:
                 }
                 if (!found) {
                     i_centroids[i] = i_p;
-                    centroids[i][0] = particles[i_p]->Eta();
-                    centroids[i][1] = particles[i_p]->Phi();
+                    centroids[i][0] = particles[i_p]->eta;
+                    centroids[i][1] = particles[i_p]->phi;
                     break;
                 }
             }
         } 
 
         for (int i_iter=0; i_iter!=max_iter; ++i_iter) {
-            assign_clusters(particles);
+            assign_particles(particles);
             update_centroids();
         }
     }
@@ -129,16 +92,16 @@ private:
         for (auto& p : particles) {
             float closest = 99999;
             int i_closest = -1;
-            float eta = p->Eta(); float phi = p->Phi();
+            float eta = p->eta; float phi = p->phi;
 
             for (int i=0; i!=K; ++i) {
-                auto dr = (eta - clusters[i][0]) ** 2 + (phi - clusters[i][1]) ** 2;
+                auto dr = pow(eta - centroids[i][0], 2) + pow(phi - centroids[i][1], 2);
                 if (dr < closest) {
                     closest = dr;
                     i_closest = i;
                 }
             }
-            clusters[i_closest].push_back(&p);
+            clusters[i_closest].push_back(p);
         }
     }
 
@@ -148,14 +111,55 @@ private:
             float eta_sum=0, phi_sum=0;
             auto &cluster = clusters[i];
             for (auto& p : cluster) {
-                eta_sum += p->Eta();
-                phi_sum += p->Phi();
+                eta_sum += p->eta;
+                phi_sum += p->phi;
             }
             centroids[i][0] = eta_sum / cluster.size();
             centroids[i][1] = phi_sum / cluster.size();
         }
     }
 }; 
+
+
+
+
+template <int K, int N>
+class HierarchicalOrdering {
+public:
+    HierarchicalOrdering() { }
+
+    vector<vector<PFCand*>> 
+    fit(vector<PFCand> &particles)
+    {
+        vector<PFCand*> p_particles;
+        for (auto& p : particles)
+            p_particles.push_back(&p);
+
+        return _recursive_fit(p_particles);
+    }
+    
+private:
+    vector<vector<PFCand*>> 
+    _recursive_fit(const vector<PFCand*> &particles)
+    {
+        vector<vector<PFCand*>> clusters;
+
+        auto kmeans = KMeans<K>(particles);
+        for (int i_k=0; i_k!=K; ++i_k) {
+            auto& cluster = kmeans.get_clusters()[i_k];
+            if (cluster.size() > N) {
+                auto split_clusters = _recursive_fit(cluster);
+                for (auto& c : split_clusters) {
+                    clusters.push_back(c);
+                }
+            } else {
+                clusters.push_back(cluster);
+            } 
+        }
+        return clusters;
+    }
+
+};
 
 
 //---------------------------------------------------------------------------
@@ -166,7 +170,7 @@ int main(int argc, char *argv[])
   srand(time(NULL));
 
   if(argc < 3) {
-    cout << " Usage: " << appName << " input_file"
+    cout << " Usage: " << "PapuDelphes" << " input_file"
          << " output_file" << endl;
     cout << " input_file - input file in ROOT format," << endl;
     cout << " output_file - output file in ROOT format" << endl;
@@ -186,11 +190,11 @@ int main(int argc, char *argv[])
   auto ho = HierarchicalOrdering<4, 10>();
   
   // add the pT of two PFCands
-  auto add_pt = [](auto* a, auto* b) { return a->pt + b->pt; }
+  auto add_pt = [](auto init, auto* b) { return init + b->pt; };
   // add the pT of a cluster of PFCands
-  auto sum_pt = [](auto &v) { return accumulate(v.begin(), v.end(), 0, add_pt); }
+  auto sum_pt = [&add_pt](auto &v) { return accumulate(v.begin(), v.end(), 0., add_pt); };
   // compare two clusters by sum pT
-  auto comp_pt = [](auto &a, auto &b) { return sum_pt(a) > sum_pt(b); }
+  auto comp_pt = [&sum_pt](auto &a, auto &b) { return sum_pt(a) > sum_pt(b); };
 
   for (;;/*event loop*/) {
     input_particles.clear();
