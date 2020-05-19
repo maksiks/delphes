@@ -27,14 +27,6 @@ using namespace std;
 
 static int NMAX = 7000;
 
-static bool interrupted = false;
-
-void SignalHandler(int sig)
-{
-  interrupted = true;
-}
-
-
 struct PFCand
 {
   float pt = 0;
@@ -150,7 +142,7 @@ private:
 
         auto kmeans = KMeans<K>(particles);
         for (int i_k=0; i_k!=K; ++i_k) {
-            auto& cluster = kmeans.get_clusters()[i_k];
+            auto cluster = kmeans.get_clusters()[i_k];
             if (cluster.size() > N) {
                 auto split_clusters = _recursive_fit(cluster);
                 for (auto& c : split_clusters) {
@@ -200,6 +192,8 @@ int main(int argc, char *argv[])
   tout->Branch("particles", &output_particles);
 
   auto ho = HierarchicalOrdering<4, 10>();
+
+  ExRootProgressBar progressBar(nevt);
   
   // add the pT of two PFCands
   auto add_pt = [](auto init, auto* b) { return init + b->pt; };
@@ -215,15 +209,15 @@ int main(int argc, char *argv[])
     npfs = itree->GetLeaf("ParticleFlowCandidate_size")->GetValue(0);
     //cout << "NPFS: " << npfs << endl;
     for (unsigned int j=0; j<npfs; j++){
-      PFCand* tmppf = new PFCand();
-      tmppf->pt = itree->GetLeaf("ParticleFlowCandidate.PT")->GetValue(j);
-      tmppf->eta = itree->GetLeaf("ParticleFlowCandidate.Eta")->GetValue(j);
-      tmppf->phi = itree->GetLeaf("ParticleFlowCandidate.Phi")->GetValue(j);
-      tmppf->e = itree->GetLeaf("ParticleFlowCandidate.E")->GetValue(j);
-      tmppf->puppi = itree->GetLeaf("ParticleFlowCandidate.PuppiW")->GetValue(j);
-      tmppf->hard_frac = itree->GetLeaf("ParticleFlowCandidate.hardfrac")->GetValue(j);
-      tmppf->pdgid = itree->GetLeaf("ParticleFlowCandidate.PID")->GetValue(j);
-      input_particles.push_back(*tmppf);
+      PFCand tmppf;
+      tmppf.pt = itree->GetLeaf("ParticleFlowCandidate.PT")->GetValue(j);
+      tmppf.eta = itree->GetLeaf("ParticleFlowCandidate.Eta")->GetValue(j);
+      tmppf.phi = itree->GetLeaf("ParticleFlowCandidate.Phi")->GetValue(j);
+      tmppf.e = itree->GetLeaf("ParticleFlowCandidate.E")->GetValue(j);
+      tmppf.puppi = itree->GetLeaf("ParticleFlowCandidate.PuppiW")->GetValue(j);
+      tmppf.hard_frac = itree->GetLeaf("ParticleFlowCandidate.hardfrac")->GetValue(j);
+      tmppf.pdgid = itree->GetLeaf("ParticleFlowCandidate.PID")->GetValue(j);
+      input_particles.push_back(tmppf);
       //cout << "PT: " << tmppf->pdgid << endl;
     }
 
@@ -246,6 +240,8 @@ int main(int argc, char *argv[])
     output_particles.resize(NMAX);
 
     tout->Fill();
+
+    progressBar.Update(k, k);
 
   }
 
