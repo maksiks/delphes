@@ -13,6 +13,7 @@
 
 #include "TFile.h"
 #include "TTree.h"
+#include "TLeaf.h"
 #include "TLorentzVector.h"
 
 #include "ExRootAnalysis/ExRootProgressBar.h"
@@ -24,8 +25,7 @@ using namespace std;
 //---------------------------------------------------------------------------
 
 
-static int NMAX = 2000;
-
+static int NMAX = 7000;
 
 static bool interrupted = false;
 
@@ -184,12 +184,19 @@ int main(int argc, char *argv[])
   // figure out how to read the file here 
   //
 
+  TFile* ifile = TFile::Open(argv[1], "READ");
+  TTree* itree = (TTree*)ifile->Get("Delphes;1");
+
   auto* fout = TFile::Open(argv[2], "RECREATE");
   auto* tout = new TTree("events", "events");
 
+  unsigned int nevt = itree->GetEntries();
+  TBranch* pfbranch = (TBranch*)itree->GetBranch("ParticleFlowCandidate");
+  std::cout << "NEVT: " << nevt << std::endl;
   vector<PFCand> input_particles;
+
   vector<PFCand> output_particles;
-  output_particles.reserve(2000);
+  output_particles.reserve(7000);
   tout->Branch("particles", &output_particles);
 
   auto ho = HierarchicalOrdering<4, 10>();
@@ -201,13 +208,28 @@ int main(int argc, char *argv[])
   // compare two clusters by sum pT
   auto comp_pt = [&sum_pt](auto &a, auto &b) { return sum_pt(a) > sum_pt(b); };
 
-  for (;;/*event loop*/) {
+  for (unsigned int k=0; k<nevt; k++){
+    itree->GetEntry(k);
     input_particles.clear();
-    // figure out how to push back the particles here
-    
+    unsigned int npfs = pfbranch->GetEntries();
+    npfs = itree->GetLeaf("ParticleFlowCandidate_size")->GetValue(0);
+    //cout << "NPFS: " << npfs << endl;
+    for (unsigned int j=0; j<npfs; j++){
+      PFCand* tmppf = new PFCand();
+      tmppf->pt = itree->GetLeaf("ParticleFlowCandidate.PT")->GetValue(j);
+      tmppf->eta = itree->GetLeaf("ParticleFlowCandidate.Eta")->GetValue(j);
+      tmppf->phi = itree->GetLeaf("ParticleFlowCandidate.Phi")->GetValue(j);
+      tmppf->e = itree->GetLeaf("ParticleFlowCandidate.E")->GetValue(j);
+      tmppf->puppi = itree->GetLeaf("ParticleFlowCandidate.PuppiW")->GetValue(j);
+      tmppf->hard_frac = itree->GetLeaf("ParticleFlowCandidate.hardfrac")->GetValue(j);
+      tmppf->pdgid = itree->GetLeaf("ParticleFlowCandidate.PID")->GetValue(j);
+      input_particles.push_back(*tmppf);
+      //cout << "PT: " << tmppf->pdgid << endl;
+    }
+
     // get clusters of 10 particles
     auto clusters = ho.fit(input_particles);
-   
+
     // sort clusters by sum pT. not very efficient since we recompute
     // sum_pt for each comparison but whatever 
     sort(clusters.begin(), clusters.end(), comp_pt);
@@ -221,10 +243,10 @@ int main(int argc, char *argv[])
       }
       ++cluster_idx;
     }
-
     output_particles.resize(NMAX);
 
     tout->Fill();
+
   }
 
   fout->Write();
