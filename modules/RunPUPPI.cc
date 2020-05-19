@@ -194,14 +194,18 @@ void RunPUPPI::Process()
       lNBad++;
       curRecoObj.id = 2;
       curRecoObj.vtxId = 0.7 * (fPVInputArray->GetEntries()); //Hack apply reco vtx efficiency of 70% for calibration
-      if(TMath::Abs(candidate->PID) == 11)
+      if(TMath::Abs(candidate->PID) == 11){
+	std::cout << "WTF" << std::endl;
         curRecoObj.pfType = 2;
+      }
       else if(TMath::Abs(candidate->PID) == 13)
         curRecoObj.pfType = 3;
       else if(TMath::Abs(candidate->PID) == 22)
         curRecoObj.pfType = 4;
       else
         curRecoObj.pfType = 1;
+      //if(TMath::Abs(candidate->PID) == 211)
+      //std::cout << "WTF" << std::endl;
       curRecoObj.dZ = particle->Position.Z() - PVZ;
     }
     else if(!candidate->IsRecoPU && candidate->Charge != 0)
