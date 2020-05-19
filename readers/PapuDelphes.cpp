@@ -40,6 +40,29 @@ struct PFCand
 };
 
 
+class Cluster : public vector<PFCand*> {
+public:
+  void finalize () 
+  {
+    for (auto* p : *this) {
+      _sum_pt += p->pt;
+      _eta += p->pt * p->eta;
+      _phi += p->pt * p->phi;
+    }
+    _eta /= _sum_pt;
+    _phi /= _sum_pt;
+  }
+
+  float eta() { return _eta; }
+  float phi() { return _phi; }
+  float sum_pt() { return _sum_pt; }
+
+private:
+  float _eta=0, _phi=0, _sum_pt=0;
+
+};
+
+
 template<int K>
 class KMeans { 
 public:
@@ -73,11 +96,11 @@ public:
 
     ~KMeans() { }
 
-    const array<vector<PFCand*>, K> get_clusters() { return clusters; }
+    const array<Cluster, K> get_clusters() { return clusters; }
 
 private:
     array<array<float, 2>, K> centroids;
-    array<vector<PFCand*>, K> clusters;
+    array<Cluster, K> clusters;
 
     void assign_particles(vector<PFCand*> &particles) 
     {
@@ -124,21 +147,24 @@ class HierarchicalOrdering {
 public:
     HierarchicalOrdering() { }
 
-    vector<vector<PFCand*>> 
+    vector<Cluster> 
     fit(vector<PFCand> &particles)
     {
         vector<PFCand*> p_particles;
         for (auto& p : particles)
             p_particles.push_back(&p);
 
-        return _recursive_fit(p_particles);
+        auto clusters = _recursive_fit(p_particles);
+        for (auto& c : clusters)
+          c.finalize();
+        return clusters;
     }
     
 private:
-    vector<vector<PFCand*>> 
+    vector<Cluster> 
     _recursive_fit(const vector<PFCand*> &particles)
     {
-        vector<vector<PFCand*>> clusters;
+        vector<Cluster> clusters;
 
         auto kmeans = KMeans<K>(particles);
         for (int i_k=0; i_k!=K; ++i_k) {
@@ -154,7 +180,6 @@ private:
         }
         return clusters;
     }
-
 };
 
 
@@ -195,12 +220,7 @@ int main(int argc, char *argv[])
 
   ExRootProgressBar progressBar(nevt);
   
-  // add the pT of two PFCands
-  auto add_pt = [](auto init, auto* b) { return init + b->pt; };
-  // add the pT of a cluster of PFCands
-  auto sum_pt = [&add_pt](auto &v) { return accumulate(v.begin(), v.end(), 0., add_pt); };
-  // compare two clusters by sum pT
-  auto comp_pt = [&sum_pt](auto &a, auto &b) { return sum_pt(a) > sum_pt(b); };
+  auto comp_pt = [](auto &a, auto &b) { return a.sum_pt() > b.sum_pt(); };
 
   for (unsigned int k=0; k<nevt; k++){
     itree->GetEntry(k);
@@ -228,9 +248,29 @@ int main(int argc, char *argv[])
     // sum_pt for each comparison but whatever 
     sort(clusters.begin(), clusters.end(), comp_pt);
 
+    // now sort clusters by proximity to last cluster, starting with
+    // the hardest cluster
+    vector<Cluster> sorted_clusters = {clusters[0]};
+    clusters.erase(clusters.begin());
+    while (clusters.size() > 0) {
+      unsigned i_cluster = 0;
+      float best_dr2 = 999999;
+      auto &last_cluster = sorted_clusters.back();
+      for (unsigned j=0; j!=clusters.size(); ++j) {
+        float dr2 = pow(last_cluster.eta() - clusters[j].eta(), 2)
+                    + pow(last_cluster.phi() - clusters[j].phi(), 2);
+        if (dr2 < best_dr2) {
+          i_cluster = j;
+          best_dr2 = dr2;
+        }
+      }
+      sorted_clusters.push_back(clusters[i_cluster]);
+      clusters.erase(clusters.begin()+i_cluster);
+    }
+
     output_particles.clear();
     int cluster_idx = 0;
-    for (auto& cluster : clusters) {
+    for (auto& cluster : sorted_clusters) {
       for (auto* p : cluster) {
         p->cluster_idx = cluster_idx;
         output_particles.push_back(*p); // *copy* the particle here before writing to tree
