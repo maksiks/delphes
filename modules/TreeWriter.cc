@@ -674,7 +674,6 @@ void TreeWriter::ProcessParticleFlowCandidates(ExRootTreeBranch *branch, TObjArr
     entry->T = initialPosition.T() * 1.0E-3 / c_light;
 
     entry->VertexIndex = candidate->ClusterIndex;
-    //std::cout << entry->VertexIndex << std::endl;
 
     entry->Eem = candidate->Eem;
     entry->Ehad = candidate->Ehad;
@@ -691,6 +690,7 @@ void TreeWriter::ProcessParticleFlowCandidates(ExRootTreeBranch *branch, TObjArr
     TLorentzVector soft = p4s.second;
 
     //std::cout << " " << std::endl;
+    //std::cout << candidate->IsRecoPU << std::endl;
 
     //std::cout << "Sum hard Pt, Eta, Phi, E " << hard.Pt() << " " << hard.Eta() << " " << hard.Phi() << " " << hard.E() << std::endl; 
     //std::cout << "Sum soft Pt, Eta, Phi, E " << soft.Pt() << " " << soft.Eta() << " " << soft.Phi() << " " << soft.E() << std::endl; 

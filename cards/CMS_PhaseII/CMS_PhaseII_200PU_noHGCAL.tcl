@@ -13,7 +13,7 @@
 #######################################
 
 set RandomSeed 22
-set MaxEvents 8000
+set MaxEvents 80
 
 
 set ExecutionPath {

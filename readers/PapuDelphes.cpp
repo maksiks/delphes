@@ -22,6 +22,7 @@
 
 using namespace std;
 
+
 //---------------------------------------------------------------------------
 
 
@@ -37,6 +38,7 @@ struct PFCand
   float pdgid = 0;
   float hard_frac = 1;  
   float cluster_idx = -1;
+  int vtxid = -1;
 };
 
 
@@ -188,6 +190,7 @@ private:
 int main(int argc, char *argv[])
 {
 
+  gROOT->ProcessLine(".L /local/bmaier/delphes/delphes/readers/PapuDelphes.C+");
   srand(time(NULL));
 
   if(argc < 3) {
@@ -227,7 +230,6 @@ int main(int argc, char *argv[])
     input_particles.clear();
     unsigned int npfs = pfbranch->GetEntries();
     npfs = itree->GetLeaf("ParticleFlowCandidate_size")->GetValue(0);
-    //cout << "NPFS: " << npfs << endl;
     for (unsigned int j=0; j<npfs; j++){
       PFCand tmppf;
       tmppf.pt = itree->GetLeaf("ParticleFlowCandidate.PT")->GetValue(j);
@@ -237,8 +239,15 @@ int main(int argc, char *argv[])
       tmppf.puppi = itree->GetLeaf("ParticleFlowCandidate.PuppiW")->GetValue(j);
       tmppf.hard_frac = itree->GetLeaf("ParticleFlowCandidate.hardfrac")->GetValue(j);
       tmppf.pdgid = itree->GetLeaf("ParticleFlowCandidate.PID")->GetValue(j);
+      if (itree->GetLeaf("ParticleFlowCandidate.Charge")->GetValue(j)!=0){
+	if (itree->GetLeaf("ParticleFlowCandidate.hardfrac")->GetValue(j)==1)
+	  tmppf.vtxid = 0;
+	else
+	  tmppf.vtxid = 1;
+      }
+      else
+	tmppf.vtxid = -1;
       input_particles.push_back(tmppf);
-      //cout << "PT: " << tmppf->pdgid << endl;
     }
 
     // get clusters of 10 particles
