@@ -36,9 +36,9 @@ struct PFCand
   float e = 0;
   float puppi = 1;
   float pdgid = 0;
-  float hard_frac = 1;  
+  float hardfrac = 1;  
   float cluster_idx = -1;
-  int vtxid = -1;
+  float vtxid = -1;
 };
 
 
@@ -184,13 +184,21 @@ private:
     }
 };
 
+template <typename T>
+void 
+fill(vector<float> &vattr, vector<PFCand> &particles, T fn_attr)
+{
+  vattr.clear();
+  for (auto& p : particles)
+    vattr.push_back(fn_attr(p));
+}
+
 
 //---------------------------------------------------------------------------
 
 int main(int argc, char *argv[])
 {
 
-  gROOT->ProcessLine(".L /local/bmaier/delphes/delphes/readers/PapuDelphes.C+");
   srand(time(NULL));
 
   if(argc < 3) {
@@ -216,8 +224,22 @@ int main(int argc, char *argv[])
   vector<PFCand> input_particles;
 
   vector<PFCand> output_particles;
-  output_particles.reserve(7000);
-  tout->Branch("particles", &output_particles);
+  output_particles.reserve(NMAX);
+
+  vector<float> vpt, veta, vphi, ve, vpuppi, vpdgid, vhardfrac, vcluster_idx, vvtxid;
+  vpt.reserve(NMAX); veta.reserve(NMAX); vphi.reserve(NMAX); 
+  ve.reserve(NMAX); vpuppi.reserve(NMAX); vpdgid.reserve(NMAX); 
+  vhardfrac.reserve(NMAX); vcluster_idx.reserve(NMAX); vvtxid.reserve(NMAX);
+
+  tout->Branch("pt", &vpt);
+  tout->Branch("eta", &veta);
+  tout->Branch("phi", &vphi);
+  tout->Branch("e", &ve);
+  tout->Branch("puppi", &vpuppi);
+  tout->Branch("pdgid", &vpdgid);
+  tout->Branch("hardfrac", &vhardfrac);
+  tout->Branch("cluster_idx", &vcluster_idx);
+  tout->Branch("vtxid", &vvtxid);
 
   auto ho = HierarchicalOrdering<4, 10>();
 
@@ -237,7 +259,7 @@ int main(int argc, char *argv[])
       tmppf.phi = itree->GetLeaf("ParticleFlowCandidate.Phi")->GetValue(j);
       tmppf.e = itree->GetLeaf("ParticleFlowCandidate.E")->GetValue(j);
       tmppf.puppi = itree->GetLeaf("ParticleFlowCandidate.PuppiW")->GetValue(j);
-      tmppf.hard_frac = itree->GetLeaf("ParticleFlowCandidate.hardfrac")->GetValue(j);
+      tmppf.hardfrac = itree->GetLeaf("ParticleFlowCandidate.hardfrac")->GetValue(j);
       tmppf.pdgid = itree->GetLeaf("ParticleFlowCandidate.PID")->GetValue(j);
       if (itree->GetLeaf("ParticleFlowCandidate.Charge")->GetValue(j)!=0){
 	if (itree->GetLeaf("ParticleFlowCandidate.hardfrac")->GetValue(j)==1)
@@ -282,11 +304,22 @@ int main(int argc, char *argv[])
     for (auto& cluster : sorted_clusters) {
       for (auto* p : cluster) {
         p->cluster_idx = cluster_idx;
-        output_particles.push_back(*p); // *copy* the particle here before writing to tree
+        output_particles.push_back(*p); 
       }
       ++cluster_idx;
     }
+    // if there are fewer than NMAX, it'll get padded out with default values
     output_particles.resize(NMAX);
+
+    fill(vpt, output_particles, [](PFCand& p) { return p.pt; }); 
+    fill(veta, output_particles, [](PFCand& p) { return p.eta; }); 
+    fill(vphi, output_particles, [](PFCand& p) { return p.phi; }); 
+    fill(ve, output_particles, [](PFCand& p) { return p.e; }); 
+    fill(vpuppi, output_particles, [](PFCand& p) { return p.puppi; }); 
+    fill(vpdgid, output_particles, [](PFCand& p) { return p.pdgid; }); 
+    fill(vhardfrac, output_particles, [](PFCand& p) { return p.hardfrac; }); 
+    fill(vcluster_idx, output_particles, [](PFCand& p) { return p.cluster_idx; }); 
+    fill(vvtxid, output_particles, [](PFCand& p) { return p.vtxid; }); 
 
     tout->Fill();
 
