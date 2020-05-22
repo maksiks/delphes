@@ -1,4 +1,3 @@
-
 #
 # Makefile for ExRootAnalysis
 #
@@ -217,7 +216,6 @@ PapuDelphes$(ExeSuf): \
 
 tmp/readers/PapuDelphes.$(ObjSuf): \
 	readers/PapuDelphes.cpp \
-	readers/PapuObj.h \
 	external/ExRootAnalysis/ExRootProgressBar.h \
 	external/ExRootAnalysis/ExRootTreeBranch.h \
 	external/ExRootAnalysis/ExRootTreeWriter.h

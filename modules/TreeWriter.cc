@@ -591,6 +591,9 @@ void TreeWriter::ProcessParticleFlowCandidates(ExRootTreeBranch *branch, TObjArr
 
   //std::cout << "Calling ParticleFlowCandidates" << std::endl;
 
+  //auto comp_pt = [](auto &a, auto &b) { return a.candidate->Momentum.Pt() > b.candidate->Momentum.Pt(); };
+  //sort(array->begin(), array->end(), comp_pt);
+
   TIter iterator(array);
   Candidate *candidate = 0;
   Candidate *particle = 0;

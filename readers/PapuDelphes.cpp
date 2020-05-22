@@ -230,6 +230,7 @@ int main(int argc, char *argv[])
   vpt.reserve(NMAX); veta.reserve(NMAX); vphi.reserve(NMAX); 
   ve.reserve(NMAX); vpuppi.reserve(NMAX); vpdgid.reserve(NMAX); 
   vhardfrac.reserve(NMAX); vcluster_idx.reserve(NMAX); vvtxid.reserve(NMAX);
+  float genmet=-99., genmetphi=-99.;
 
   tout->Branch("pt", &vpt);
   tout->Branch("eta", &veta);
@@ -240,15 +241,24 @@ int main(int argc, char *argv[])
   tout->Branch("hardfrac", &vhardfrac);
   tout->Branch("cluster_idx", &vcluster_idx);
   tout->Branch("vtxid", &vvtxid);
+  //tout->Branch("genmet", genmet);
+  //tout->Branch("genmetphi", genmetphi);
+  TBranch* b_genmet = tout->Branch("genmet",&genmet, "genmet/F");
+  TBranch* b_genmetphi = tout->Branch("genmetphi",&genmetphi, "genmetphi/F");
 
   auto ho = HierarchicalOrdering<4, 10>();
 
   ExRootProgressBar progressBar(nevt);
   
   auto comp_pt = [](auto &a, auto &b) { return a.sum_pt() > b.sum_pt(); };
+  auto comp_p4 = [](auto &a, auto &b) { return a.pt > b.pt; };
 
   for (unsigned int k=0; k<nevt; k++){
     itree->GetEntry(k);
+    
+    genmet = itree->GetLeaf("GenMissingET.MET")->GetValue(0);
+    genmetphi = itree->GetLeaf("GenMissingET.Phi")->GetValue(0);
+
     input_particles.clear();
     unsigned int npfs = pfbranch->GetEntries();
     npfs = itree->GetLeaf("ParticleFlowCandidate_size")->GetValue(0);
@@ -271,6 +281,9 @@ int main(int argc, char *argv[])
 	tmppf.vtxid = -1;
       input_particles.push_back(tmppf);
     }
+
+    // sorting input particles by pT
+    sort(input_particles.begin(), input_particles.end(), comp_p4);    
 
     // get clusters of 10 particles
     auto clusters = ho.fit(input_particles);
@@ -320,7 +333,7 @@ int main(int argc, char *argv[])
     fill(vhardfrac, output_particles, [](PFCand& p) { return p.hardfrac; }); 
     fill(vcluster_idx, output_particles, [](PFCand& p) { return p.cluster_idx; }); 
     fill(vvtxid, output_particles, [](PFCand& p) { return p.vtxid; }); 
-
+    
     tout->Fill();
 
     progressBar.Update(k, k);
