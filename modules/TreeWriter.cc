@@ -666,6 +666,7 @@ void TreeWriter::ProcessParticleFlowCandidates(ExRootTreeBranch *branch, TObjArr
     entry->Phi = phi;
     entry->CtgTheta = ctgTheta;
 
+    //if (candidate->PID == 22)
     //std::cout << "Reconstructed PID, PT, ETA, PHI, E:   " << candidate->PID << " " << pt << " " << momentum.Eta() << " " << phi << " " << e << std::endl;
 
     particle = static_cast<Candidate *>(candidate->GetCandidates()->At(0));
