@@ -26,7 +26,7 @@ using namespace std;
 //---------------------------------------------------------------------------
 
 
-static int NMAX = 7000;
+static int NMAX = 9000;
 
 struct PFCand
 {
@@ -247,6 +247,7 @@ int main(int argc, char *argv[])
   TBranch* b_genmetphi = tout->Branch("genmetphi",&genmetphi, "genmetphi/F");
 
   auto ho = HierarchicalOrdering<4, 10>();
+  //auto ho = HierarchicalOrdering<4, 30>();
 
   ExRootProgressBar progressBar(nevt);
   
